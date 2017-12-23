@@ -3,9 +3,18 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <iostream>
+#include <string>
+#include <list>
+
+#include "my.h"
+
+using namespace std;
+
 extern char yytext[];
 extern int column;
 extern int yylineno;
+int cnt;
 
 int yylex(void);
 void yyerror(char *s);
@@ -14,7 +23,7 @@ void yyerror(char *s);
 %token If Else While Class Extends Public Static Void
 %token Boolean Integer String True False
 %token This New Println Return ArrayLength Main
-%token Id Number And
+%token And
 
 %right '='
 %left '{'
@@ -28,101 +37,112 @@ void yyerror(char *s);
 
 %start Goal
 
+%union {
+    node *nd;
+    nodes *ndl;
+    char *id;
+    float num;
+}
+%type <nd> MainClass Goal ClassDeclaration VarDeclaration MethodDeclaration Expression Type Statement Identifier
+%type <ndl> ClassDeclarationList VarDeclarationList MethodDeclarationList StatementList ExpressionList ParameterList
+%token <num> Number
+%token <id> Id
+
 %%
 Goal
-    :   MainClass ClassDeclarationList      { printf("OK\n"); }
+    :   MainClass ClassDeclarationList      { $$ = new node(++cnt, "Goal"); add_nn($$, $1); add_nl($$, $2); }
     ;
 
 MainClass
-    :   Class Identifier '{' Public Static Void Main '(' String '[' ']' Identifier ')' '{' Statement '}' '}'    { printf("OKshit\n"); }
+    :   Class Identifier '{' Public Static Void Main '(' String '[' ']' Identifier ')' '{' Statement '}' '}'    { $$ = new node(++cnt, "MainClass"); add_nn($$, $2); add_nn($$, $12); add_nn($$, $15); }
     ;
 
 ClassDeclarationList
-    :   ClassDeclaration ClassDeclarationList
-    |   /* Empty */
+    :   ClassDeclaration ClassDeclarationList { $$ = $2; $2->push_front($1); }
+    |   { $$ = new nodes(); } /* Empty */
     ;
 
 ClassDeclaration
-    :   Class Identifier '{' VarDeclarationList MethodDeclarationList '}'
-    |   Class Identifier '{' MethodDeclarationList '}'
-    |   Class Identifier Extends Identifier '{' VarDeclarationList MethodDeclarationList '}'
-    |   Class Identifier Extends Identifier '{' MethodDeclarationList '}'
+    :   Class Identifier '{' VarDeclarationList MethodDeclarationList '}'    { $$ = new node(++cnt, "ClassDeclaration"); }
+    |   Class Identifier '{' MethodDeclarationList '}'    {$$ = new node(++cnt, "ClassDeclaration");}
+    |   Class Identifier Extends Identifier '{' VarDeclarationList MethodDeclarationList '}'    {$$ = new node(++cnt, "ClassDeclaration");}
+    |   Class Identifier Extends Identifier '{' MethodDeclarationList '}'    {$$ = new node(++cnt, "ClassDeclaration");}
     ;
 
 VarDeclarationList
-    :   VarDeclaration
-    |   VarDeclarationList VarDeclaration
+    :   VarDeclaration {$$ = new nodes();}
+    |   VarDeclarationList VarDeclaration {$$ = $1; $1->push_back($2);}
     ;
 
 VarDeclaration
-    :   Type Identifier ';'
+    :   Type Identifier ';' {$$ = new node(++cnt, "VarDeclaration"); add_nn($$, $1); add_nn($$, $2); add_nt($$, ";");  }
     ;
 
 MethodDeclarationList
-    :   MethodDeclaration MethodDeclarationList
-    |   /* Empty */
+    :   MethodDeclaration MethodDeclarationList {$$ = $2; $2->push_front($1);}
+    |   {$$ = new nodes();} /* Empty */
     ;
 
 MethodDeclaration
-    :   Public Type Identifier '(' ParameterList ')' '{' VarDeclarationList StatementList Return Expression ';' '}'
-    |   Public Type Identifier '(' ParameterList ')' '{' StatementList Return Expression ';' '}'
+    :   Public Type Identifier '(' ParameterList ')' '{' VarDeclarationList StatementList Return Expression ';' '}'    {$$ = new node(++cnt, "MethodDeclaration");  }    
+    |   Public Type Identifier '(' ParameterList ')' '{' StatementList Return Expression ';' '}'    {$$ = new node(++cnt, "MethodDeclaration");}    
     ;
 
 ParameterList
-    :   Type Identifier
-    |   Type Identifier ',' ParameterList
-    |   /* Empty */
+    :   Type Identifier    {$$->push_back($1); $$->push_back($2);}
+    |   Type Identifier ',' ParameterList    {$$->push_front($2); $$->push_front($1);}
+    |       {$$ = new nodes();} /* Empty */
     ;
 
 Type
-    :   Integer '[' ']'
-    |   Boolean
-    |   Integer
-    |   Identifier
+    :   Integer '[' ']'    {$$ = new node(++cnt, "Type"); add_nt($$, "Integer[]"); }
+    |   Boolean    {$$ = new node(++cnt, "Type"); add_nt($$, "Boolean"); }
+    |   Integer    {$$ = new node(++cnt, "Type"); add_nt($$, "Integer"); }
+    |   Identifier    {$$ = new node(++cnt, "Type"); add_nn($$, $1); }
     ;
 
 StatementList
-    :   Statement StatementList
-    |   /* Empty */
+    :   Statement StatementList    { $$ = $2; $2->push_front($1); }
+    |       {$$ = new nodes();}    /* Empty */
     ;
 
 Statement
-    :   '{' StatementList '}'
-    |   If '(' Expression ')' Statement Else Statement
-    |   While '(' Expression ')' Statement
-    |   Println '(' Expression ')' ';'
-    |   Identifier '=' Expression ';'
-    |   Identifier '[' Expression ']' '=' Expression ';'
+    :   '{' StatementList '}'    {$$ = new node(++cnt, "Statement"); add_nt($$, "{"); add_nl($$, $2); add_nt($$, "}"); }
+    |   If '(' Expression ')' Statement Else Statement    {$$ = new node(++cnt, "Statement"); add_nt($$, "If"); add_nt($$, "(");  add_nn($$, $3); add_nt($$, ")"); add_nn($$, $5); add_nt($$, "Else");  add_nn($$, $7); }
+    |   While '(' Expression ')' Statement    {$$ = new node(++cnt, "Statement"); add_nt($$, "While"); add_nt($$, "("); add_nn($$, $3); add_nt($$, ")"); add_nn($$, $5); }
+    |   Println '(' Expression ')' ';'    {$$ = new node(++cnt, "Statement"); add_nt($$, "Println"); add_nt($$, "("); add_nn($$, $3); add_nt($$, ")"); add_nt($$, ";"); }
+    |   Identifier '=' Expression ';'    {$$ = new node(++cnt, "Statement"); add_nn($$, $1); add_nt($$, "="); add_nn($$, $3); add_nt($$, ";"); }
+    |   Identifier '[' Expression ']' '=' Expression ';'    {$$ = new node(++cnt, "Statement"); add_nn($$, $1); add_nt($$, "["); add_nn($$, $3); add_nt($$, "]="); add_nn($$, $6); add_nt($$, ";"); }
     ;
 
 ExpressionList
-    :   Expression
-    |   Expression ',' ExpressionList
-    |   /* Empty */
+    :   Expression    {$$ = new nodes();}
+    |   Expression ',' ExpressionList    {$$ = new nodes();}
+    |       {$$ = new nodes();}/* Empty */
     ;
 
 Expression
-    :   Expression And Expression
-    |   Expression '<' Expression
-    |   Expression '+' Expression
-    |   Expression '-' Expression
-    |   Expression '*' Expression
-    |   Expression '[' Expression ']'
-    |   Expression '.' ArrayLength
-    |   Expression '.' Identifier '(' ExpressionList ')'
-    |   Number
-    |   True
-    |   False
-    |   Identifier
-    |   This
-    |   New Integer '[' Expression ']'
-    |   New Identifier '(' ')'
-    |   '!' Expression
-    |   '(' Expression ')'
+    :   Expression And Expression    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "And"); add_nn($$, $3);}
+    |   Expression '<' Expression    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "<"); add_nn($$, $3);}
+    |   Expression '+' Expression    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "+"); add_nn($$, $3);}
+    |   Expression '-' Expression    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "-"); add_nn($$, $3); }
+    |   Expression '*' Expression    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "*"); add_nn($$, $3);  }
+    |   Expression '[' Expression ']'    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "["); add_nn($$, $3); add_nt($$, "]"); }
+    |   Expression '.' ArrayLength    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "."); add_nt($$, "ArrayLength"); }
+    |   Expression '.' Identifier '(' ExpressionList ')'    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); add_nt($$, "."); add_nn($$, $3); add_nt($$, "("); add_nl($$, $5); add_nt($$, ")"); }
+    |   Number    {$$ = new node(++cnt, "Expression"); char tmpstr[20]; sprintf(tmpstr, "%g", $1); add_nt($$, string(tmpstr)); }
+    |   True    {$$ = new node(++cnt, "Expression");  add_nt($$, "True"); }
+    |   False    {$$ = new node(++cnt, "Expression"); add_nt($$, "False"); }
+    |   Identifier    {$$ = new node(++cnt, "Expression"); add_nn($$, $1); }
+    |   This    {$$ = new node(++cnt, "Expression"); add_nt($$, "This"); }
+    |   New Integer '[' Expression ']'    {$$ = new node(++cnt, "Expression"); add_nt($$, "New"); add_nt($$, "Integer"); add_nt($$, "["); add_nn($$, $4); add_nt($$, "]");  }
+    |   New Identifier '(' ')'    {$$ = new node(++cnt, "Expression"); add_nt($$, "New"); add_nn($$, $2); add_nt($$, "()"); }
+    |   '!' Expression    {$$ = new node(++cnt, "Expression"); add_nt($$, "!"); add_nn($$, $2); }
+    |   '(' Expression ')'    {$$ = new node(++cnt, "Expression"); add_nt($$, "("); add_nn($$, $2); add_nt($$, ")"); }
     ;
 
 Identifier
-    :   Id
+    :   Id    {$$ = new node(++cnt, "Identifier"); add_nt($$, string($1)); }
     ;
 
 %%

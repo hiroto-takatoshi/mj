@@ -1,8 +1,11 @@
 %{
-#include <stdio.h>
+#include <iostream>
+#include <cstdlib>
+#include <string.h>
+#include "my.h"
 #include "y.tab.h"
-void count();
-int yylineno;
+void yyerror(char *s);
+using namespace std;
 %}
 
         /* Basics */
@@ -12,52 +15,52 @@ digit                             [0-9]
 alphanum                          ({alpha}|{digit})
 
 %%
-"if"                              { count(); return If; }
-"else"                            { count(); return Else; }
-"while"                           { count(); return While; }
-"class"                           { count(); return Class; }
-"extends"                         { count(); return Extends; }
-"public"                          { count(); return Public; }
-"static"                          { count(); return Static; }
-"void"                            { count(); return Void; }
-"boolean"                         { count(); return Boolean; }
-"int"                             { count(); return Integer; }
-"String"                          { count(); return String; }
-"true"                            { count(); return True; }
-"false"                           { count(); return False; }
-"this"                            { count(); return This; }
-"new"                             { count(); return New; }
-"System.out.println"              { count(); return Println; }
-"return"                          { count(); return Return; }
-"length"                          { count(); return ArrayLength; }
-"main"                            { count(); return Main; }
+"if"                              {  return If; }
+"else"                            {  return Else; }
+"while"                           {  return While; }
+"class"                           {  return Class; }
+"extends"                         {  return Extends; }
+"public"                          {  return Public; }
+"static"                          {  return Static; }
+"void"                            {  return Void; }
+"boolean"                         {  return Boolean; }
+"int"                             {  return Integer; }
+"String"                          {  return String; }
+"true"                            {  return True; }
+"false"                           {  return False; }
+"this"                            {  return This; }
+"new"                             {  return New; }
+"System.out.println"              {  return Println; }
+"return"                          {  return Return; }
+"length"                          {  return ArrayLength; }
+"main"                            {  return Main; }
 
-{alpha}({alphanum}|"_")*          { count(); return Id; }
-{digit}+                          { count(); return Number; }
-    /*\"(.|"\n")*\"                     { count(); return Text; }*/
+{alpha}({alphanum}|"_")*          {  yylval.id = strdup(yytext); return Id; }
+{digit}+                          {  yylval.num = atof(yytext); return Number; }
+    /*\"(.|"\n")*\"                     {  return Text; }*/
 
-"&&"                              { count(); return And; }
-"<"                               { count(); return '<'; }
-"+"                               { count(); return '+'; }
-"-"                               { count(); return '-'; }
-"*"                               { count(); return '*'; }
-"!"                               { count(); return '!'; }
-"="                               { count(); return '='; }
-"."                               { count(); return '.'; }
+"&&"                              {  return And; }
+"<"                               {  return '<'; }
+"+"                               {  return '+'; }
+"-"                               {  return '-'; }
+"*"                               {  return '*'; }
+"!"                               {  return '!'; }
+"="                               {  return '='; }
+"."                               {  return '.'; }
 
-"("                               { count(); return '('; }
-")"                               { count(); return ')'; }
-"["                               { count(); return '['; }
-"]"                               { count(); return ']'; }
-"{"                               { count(); return '{'; }
-"}"                               { count(); return '}'; }
-","                               { count(); return ','; }
-";"                               { count(); return ';'; }
+"("                               {  return '('; }
+")"                               {  return ')'; }
+"["                               {  return '['; }
+"]"                               {  return ']'; }
+"{"                               {  return '{'; }
+"}"                               {  return '}'; }
+","                               {  return ','; }
+";"                               {  return ';'; }
 
 "//".*"\n"                        { /* Comment */yylineno++; }
 "/*"(.|"\n")*"*\\"                { /* Comment */yylineno++; }
-[ \t\r]                           { count(); }
-\n                                { count(); yylineno++; }
+[ \t\r]                           {  }
+\n                                {  yylineno++; }
 .                                 { yyerror("Unknown character"); }
 
 %%
@@ -66,21 +69,7 @@ int yywrap()
     return 1;
 }
 
-int column = 0;
 
-void count() {
-    int i;
-
-    for(i = 0; yytext[i] != '\0'; i++)
-        if(yytext[i] == '\n')
-            column = 0;
-        else if(yytext[i] == '\t')
-            column += 8 - (column % 8);
-        else
-            column++;
-
-    /*ECHO;*/
-}
 
 /*
 int main(void) {
