@@ -17,8 +17,10 @@ extern int yylineno;
 int cnt;
 
 int yylex(void);
-void yyerror(char *s);
+void yyerror(const char *s);
 %}
+
+%error-verbose
 
 %token If Else While Class Extends Public Static Void
 %token Boolean Integer String True False
@@ -48,6 +50,7 @@ void yyerror(char *s);
 %token <num> Number
 %token <id> Id
 
+
 %%
 Goal
     :   MainClass ClassDeclarationList      { $$ = new node(++cnt, "Goal"); add_nn($$, $1); add_nl($$, $2); }
@@ -71,7 +74,7 @@ ClassDeclaration
 
 VarDeclarationList
     :   VarDeclaration {$$ = new nodes(); $$ -> push_back($1); }
-    |   VarDeclaration VarDeclarationList  {$$ = $2; $2->push_front($1);}
+    |   VarDeclarationList VarDeclaration  {$$ = $1; $1->push_back($2);}
     ;
 
 VarDeclaration
@@ -142,17 +145,18 @@ Expression
     ;
 
 Identifier
-    :   Id    {$$ = new node(++cnt, "Identifier"); add_nt($$, string($1)); }
+    :   Id    {$$ = new node(++cnt, "Identifier"); add_nt($$, string($1));  } /* add_nt($$, string($1)); */
     ;
 
 %%
-void yyerror(char *s) {
+void yyerror(const char *s) {
     /*fflush(stdout);*/
     /*printf("\n%*s\n%*s\n", column, "*", column, s);*/
     fprintf(stderr, "line %d: %s\n", yylineno, s);
 }
 
 int main(void) {
+    //yydebug = 1;
     yyparse();
     return 0;
 }

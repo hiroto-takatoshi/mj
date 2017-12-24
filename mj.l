@@ -4,7 +4,7 @@
 #include <string.h>
 #include "my.h"
 #include "y.tab.h"
-void yyerror(char *s);
+void yyerror(const char *s);
 using namespace std;
 %}
 
