@@ -15,7 +15,7 @@ void add_nn(node *n1, node *n2) {
 
 void add_nl(node *n1, list<node *> *l1) {
     //printf("shit:!!!%d\n", l1->size());
-    if(!l1->size()) return;
+    //if(l1 == NULL) return;
     for (list<node *> :: iterator it = l1->begin(); it != l1->end(); ++it) {
         add_nn(n1, *it);
     }
