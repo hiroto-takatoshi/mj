@@ -6,6 +6,25 @@
 
 using namespace std;
 
+void semantic(list<node *> *l1,  list<node *> *l2) {
+    /* Performs semantic check for each, every l2 element in l1  */
+    for (list<node *> :: iterator it = l2->begin(); it != l2->end(); ++it) {
+        if ((*it) -> _id == "")
+            continue ;
+        bool found = false;
+        for (list<node *> :: iterator jt = l1->begin(); jt != l1->end(); ++jt) {
+            
+            if ((*it) -> _id == (*jt) -> _id) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw logic_error("Semantic error : undefined " + (*it) -> _id);
+        }
+    }
+}
+
 void add_nn(node *n1, node *n2) {
     printf("[%d]", n1->num);
     cout << n1->name << " ";

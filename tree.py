@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # # -*- coding: utf-8 -*-
 
+# Uses pydot, graphviz's python port to generate the syntax tree.
+# Here, we perform a trick to manage the node orders correctly.
+
 import pydot
 graph = pydot.Dot(graph_type='graph')
 S = pydot.Subgraph(rank='same')
