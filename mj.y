@@ -149,11 +149,6 @@ Identifier
     ;
 
 %%
-void yyerror(const char *s) {
-    /*fflush(stdout);*/
-    /*printf("\n%*s\n%*s\n", column, "*", column, s);*/
-    fprintf(stderr, "line %d: %s\n", yylineno, s);
-}
 
 int main(void) {
     //yydebug = 1;

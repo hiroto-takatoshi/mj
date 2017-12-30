@@ -6,6 +6,8 @@
 
 using namespace std;
 
+extern int yylineno;
+
 void semantic(list<node *> *l1,  list<node *> *l2) {
     /* Performs semantic check for each, every l2 element in l1  */
     for (list<node *> :: iterator it = l2->begin(); it != l2->end(); ++it) {
@@ -20,7 +22,9 @@ void semantic(list<node *> *l1,  list<node *> *l2) {
             }
         }
         if (!found) {
-            throw logic_error("Semantic error : undefined " + (*it) -> _id);
+            char holder[20];
+            sprintf(holder, " at line %d", yylineno);
+            throw logic_error("Semantic error : undefined " + (*it) -> _id + string(holder));
         }
     }
 }

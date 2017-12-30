@@ -69,7 +69,14 @@ int yywrap()
     return 1;
 }
 
-
+void yyerror(const char *s) {
+    /*fflush(stdout);*/
+    /*printf("\n%*s\n%*s\n", column, "*", column, s);*/
+    //fprintf(stderr, "lexical error on line %d: %s\n", yylineno, s);
+    char sr[100];
+    sprintf(sr,"error on line %d: %s\n", yylineno, s);
+    throw logic_error(sr);
+}
 
 /*
 int main(void) {
