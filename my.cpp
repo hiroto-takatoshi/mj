@@ -23,8 +23,8 @@ void semantic(list<node *> *l1,  list<node *> *l2) {
         }
         if (!found) {
             char holder[20];
-            sprintf(holder, " at line %d", yylineno);
-            throw logic_error("Semantic error : undefined " + (*it) -> _id + string(holder));
+            sprintf(holder, "line %d ", yylineno);
+            throw logic_error(string(holder) + "Semantic error : undefined " + (*it) -> _id);
         }
     }
 }
