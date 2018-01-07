@@ -78,7 +78,7 @@ VarDeclarationList
     ;
 
 VarDeclaration
-    :   Type Identifier ';' {$$ = new node(++cnt, "VarDeclaration", $2 -> name); add_nn($$, $1); add_nn($$, $2); add_nt($$, ";"); } /* ko ko (cv 810) */
+    :   Type Identifier ';' {$$ = new node(++cnt, "VarDeclaration", $2 -> _id); add_nn($$, $1); add_nn($$, $2); add_nt($$, ";"); } /* ko ko (cv 810) */
     ;
 
 MethodDeclarationList
