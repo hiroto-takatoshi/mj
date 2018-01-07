@@ -1,6 +1,8 @@
 # mj
 
-Minijava parser with bison, syntax tree with graphviz.
+Minijava parser with bison, syntax tree with graphviz. </br>
+
+https://github.com/hiroto-takatoshi/mj 
 
 ## Dependencies
 
@@ -18,3 +20,7 @@ python3 tree.py
 ```
 By default ```tree.py``` reads the ```tree.txt``` file, and outputs syntax tree diagram to ```exp.png```.
 
+## Contributions
+
+__GUI__ 许陆 </br>
+__Everything else__ 王凯伦 </br>
