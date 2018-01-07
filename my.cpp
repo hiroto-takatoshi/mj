@@ -10,9 +10,6 @@ extern int yylineno;
 
 void semantic(list<node *> *l1,  list<node *> *l2) {
     /* Performs semantic check for each, every l2 element in l1  */
-    for (list<node *> :: iterator it = l1->begin(); it != l1->end(); ++it) {
-        cout << (*it) -> _id << endl;
-    }
     for (list<node *> :: iterator it = l2->begin(); it != l2->end(); ++it) {
         if ((*it) -> _id == "")
             continue ;
